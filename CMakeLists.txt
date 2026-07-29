@@ -16,13 +16,29 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES native)
 endif()
 
+
+find_package(CUDAToolkit REQUIRED)
+
+# ===================== 构建链接库 =====================
+set(CULIB cutool)
+add_library(${CULIB}
+    src/kernels/vector_add.cu
+    src/kernels/vecAdd.cu
+    src/kernels/err_kernel.cu
+)
+
+target_include_directories(${CULIB} PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(${CULIB} PUBLIC CUDA::cublas CUDA::cudart)
+
+
 # ===================== 构建目标 =====================
 add_executable(cuda_demo
     src/main.cpp
-    src/kernels/vector_add.cu
 )
 
-target_include_directories(cuda_demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(cuda_demo
+    PRIVATE ${CULIB}
+)
 
 # ===================== 编译选项 =====================
 target_compile_options(cuda_demo PRIVATE
@@ -44,3 +60,6 @@ target_compile_options(cuda_demo PRIVATE
 # ===================== 可选：链接 CUDA 库 =====================
 # find_package(CUDAToolkit REQUIRED)
 # target_link_libraries(cuda_demo PRIVATE CUDA::cublas CUDA::cudart)
+
+
+add_subdirectory(examples)

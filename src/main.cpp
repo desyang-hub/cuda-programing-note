@@ -1,11 +1,70 @@
 #include "kernels/vector_add.cuh"
+#include "kernels/vecAdd.cuh"
+#include "kernels/err_kernel.cuh"
 
 #include <cuda_runtime.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <memory>
+#include <iostream>
+
+#include "cuda_utils.h"
+
+void test_vec_add() {
+    // 初始化主机内存
+    int N = 1 << 20; // 元素个数
+    int TOTAL_BYTES = N * sizeof(float);
+    float* A = new float[N];
+    std::unique_ptr<float[]> pA(A);
+    float* B = new float[N];
+    std::unique_ptr<float[]> pB(B);
+    float* C = new float[N];
+    std::unique_ptr<float[]> pC(C);
+
+    for (int i = 0; i < N; ++i) {
+        A[i] = i;
+        B[i] = 2 * i;
+    }
+
+    // 初始化CUDA空间
+    CudaMallocGuard gA(TOTAL_BYTES);
+    CudaMallocGuard gB(TOTAL_BYTES);
+    CudaMallocGuard gC(TOTAL_BYTES);
+
+    // H2D
+    CUDA_CHECK(cudaMemcpy(gA.get(), A, TOTAL_BYTES, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(gB.get(), B, TOTAL_BYTES, cudaMemcpyHostToDevice));
+
+    // kernel
+    lunchVecAdd(gA.get(), gB.get(), gC.get(), N);
+    // 查看内核抛出异常
+    CUDA_CHECK(cudaGetLastError());
+
+    // D2H
+    CUDA_CHECK(cudaMemcpy(C, gC.get(), TOTAL_BYTES, cudaMemcpyDeviceToHost));
+
+    // compare
+    bool pass = true;
+    for (int i = 0; i < N; ++i) {
+        if (fabsf(C[i] - (static_cast<float>(i) + static_cast<float>(2 * i))) > 1e-5f) {
+            pass = false;
+        }
+    }
+
+    if (pass) {
+        printf("verify success.\n");
+    }
+    else {
+        printf("verify failed!\n");
+    }
+}
+
 
 int main() {
+    test_vec_add();
+    lunch_err_kernel();
+
     constexpr int N = 1 << 20; // 约 100 万元素
     constexpr size_t BYTES = N * sizeof(float);
 
