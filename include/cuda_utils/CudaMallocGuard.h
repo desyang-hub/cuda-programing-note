@@ -39,7 +39,7 @@ public:
     }
 
     size_t bytes() const {
-        return elements_size * sizeof(T);
+        return elements_size_ * sizeof(T);
     }
     
     // 获取设备指针（用于 kernel 调用）

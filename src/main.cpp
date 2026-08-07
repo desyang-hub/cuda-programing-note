@@ -28,9 +28,11 @@ void test_vec_add() {
     }
 
     // 初始化CUDA空间
-    CudaMallocGuard gA(TOTAL_BYTES);
-    CudaMallocGuard gB(TOTAL_BYTES);
-    CudaMallocGuard gC(TOTAL_BYTES);
+    CudaMallocGuard<float> gA(N);
+    CudaMallocGuard<float> gB(N);
+    CudaMallocGuard<float> gC(N);
+
+    CudaMallocGuard<float> gD = std::move(gA);
 
     // H2D
     CUDA_CHECK(cudaMemcpy(gA.get(), A, TOTAL_BYTES, cudaMemcpyHostToDevice));

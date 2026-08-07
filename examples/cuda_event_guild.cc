@@ -23,9 +23,9 @@ void cuda_event_timer() {
     int N = 1 << 20;
     int TOTAL_BYTES = N * sizeof(float);
 
-    CudaMallocGuard gA(TOTAL_BYTES);
-    CudaMallocGuard gB(TOTAL_BYTES);
-    CudaMallocGuard gC(TOTAL_BYTES);
+    CudaMallocGuard<float> gA(N);
+    CudaMallocGuard<float> gB(N);
+    CudaMallocGuard<float> gC(N);
 
     // 记录事件开始
     cudaEventRecord(start.get(), stream.get());

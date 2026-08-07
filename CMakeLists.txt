@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
+set(CMAKE_CUDA_ARCHITECTURES 86)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
@@ -25,6 +27,13 @@ add_library(${CULIB}
     src/kernels/vector_add.cu
     src/kernels/vecAdd.cu
     src/kernels/err_kernel.cu
+    src/kernels/vector_sum.cu
+    src/gemm/sgemm_cpu.cu
+    src/gemm/sgemm_gpu.cu
+    src/gemm/sgemm_gpu_v1.cu
+    src/gemm/sgemm_gpu_v2.cu
+    src/gemm/sgemm_gpu_v3.cu
+    src/gemm/sgemm_gpu_ai.cu
 )
 
 target_include_directories(${CULIB} PUBLIC ${CMAKE_SOURCE_DIR}/include)
