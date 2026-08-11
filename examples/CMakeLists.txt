@@ -14,3 +14,6 @@ target_link_libraries(gemm_gpu_test PRIVATE ${CULIB})
 
 add_executable(strict_test strict_test.cc)
 target_link_libraries(strict_test PRIVATE ${CULIB})
+
+add_executable(gemm1_test gemm1_test.cc)
+target_link_libraries(gemm1_test PRIVATE ${CULIB})

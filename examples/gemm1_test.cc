@@ -1,10 +1,6 @@
-#include "gemm/gemm.cuh"
-#include "gemm/sgemm_gpu_v1.cuh"
-#include "gemm/sgemm_gpu_v2.cuh"
-#include "gemm/sgemm_gpu_v3.cuh"
-#include "gemm/sgemm_gpu_ai.cuh"
-#include "gemm/sgemm_gpu_coalescing.cuh"
-#include "gemm/sgemm_gpu_cache.cuh"
+#include "gemm1/gemm_cpu.cuh"
+#include "gemm1/gemm_naive.cuh"
+#include "gemm1/gemm_coalescing.cuh"
 #include "cuda_utils.h"
 
 #include <iostream>
@@ -14,6 +10,9 @@
 #include <string>
 #include <vector>
 #include <limits>
+
+using CallFunc = std::function<void(int M, int N, int K, float alpha, const float *A,
+    const float *B, float beta, float *C, cudaStream_t stream)>;
 
 // ==================== CPU 参考实现 ====================
 static void sgemm_cpu(const float* A, const float* B, float* C,
@@ -83,7 +82,7 @@ struct BenchResult {
 
 static BenchResult benchmark_kernel(
     const std::string& name,
-    std::function<void(float*, float*, float*, int, int, int, cudaStream_t)> launch_fn,
+    CallFunc launch_fn,
     float* d_a, float* d_b, float* d_c,
     int M, int K, int N,
     int warmup = 3, int repeat = 10)
@@ -94,7 +93,7 @@ static BenchResult benchmark_kernel(
 
     // Warmup
     for (int i = 0; i < warmup; ++i) {
-        launch_fn(d_a, d_b, d_c, M, K, N, stream);
+        launch_fn(M, N, K, 1, d_a, d_b, 0, d_c, stream);
     }
     cudaStreamSynchronize(stream);
 
@@ -102,7 +101,7 @@ static BenchResult benchmark_kernel(
     CudaEvent start, end;
     cudaEventRecord(start.get(), stream);
     for (int i = 0; i < repeat; ++i) {
-        launch_fn(d_a, d_b, d_c, M, K, N, stream);
+        launch_fn(M, N, K, 1, d_a, d_b, 0, d_c, stream);
     }
     cudaEventRecord(end.get(), stream);
     cudaEventSynchronize(end.get());
@@ -150,24 +149,23 @@ int main(int argc, char const* argv[]) {
     // 定义所有待测 kernel
     struct KernelEntry {
         std::string name;
-        std::function<void(float*, float*, float*, int, int, int, cudaStream_t)> fn;
+        std::function<void(int M, int N, int K, float alpha, const float *A,
+            const float *B, float beta, float *C, cudaStream_t stream)> fn;
     };
 
     std::vector<KernelEntry> kernels = {
-        {"sgemm_gpu", lunch_sgemm_gpu},
-        {"sgemm_gpu_coalesing", lunch_sgemm_gpu_coalescing},
-        {"sgemm_cache", lunch_sgemm_gpu_cache},
-        {"sgemm_gpu_v1", lunch_sgemm_gpu_v1},
-        {"sgemm_gpu_v2", lunch_sgemm_gpu_v2},
-        {"sgemm_gpu_v3", lunch_sgemm_gpu_v3},
-        {"sgemm_gpu_ai",  launch_sgemm_optimized},
+        // {"sgemm_cpu", lunch_sgemm_cpu},
+        {"sgemm_naive", lunch_sgemm_naive},
+        {"sgemm_coalescing", lunch_sgemm_coalescing},
+        // {"sgemm_gpu_v3", lunch_sgemm_gpu_v3},
+        // {"sgemm_gpu_ai",  launch_sgemm_optimized},
     };
 
     bool all_passed = true;
     for (auto& ke : kernels) {
         std::cout << "[Verify] " << ke.name << " ... ";
         cudaMemset(d_c.get(), 0, TEST_M * TEST_N * sizeof(float));
-        ke.fn(d_a.get(), d_b.get(), d_c.get(), TEST_M, TEST_K, TEST_N, 0);
+        ke.fn(TEST_M, TEST_N, TEST_K, 1, d_a.get(), d_b.get(), 0, d_c.get(), 0);
         cudaDeviceSynchronize();
         h_c_gpu.copy_from_device(d_c.get());
 

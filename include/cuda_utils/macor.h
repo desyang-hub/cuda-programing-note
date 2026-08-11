@@ -15,3 +15,9 @@
                 cudaGetErrorString(result));      \
     }                                             \
 } while(0)
+
+
+#define OFFSET(row, col, cols) ((cols) * (row) + col)
+#define FLOAT4(pointer) (reinterpret_cast<float4*>(&(pointer))[0])
+
+#define CEIL_DIV(x, y) ((x) + (y) - 1) / (y)

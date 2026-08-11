@@ -34,6 +34,11 @@ add_library(${CULIB}
     src/gemm/sgemm_gpu_v2.cu
     src/gemm/sgemm_gpu_v3.cu
     src/gemm/sgemm_gpu_ai.cu
+    src/gemm/sgemm_gpu_coalescing.cu
+    src/gemm/sgemm_gpu_cache.cu
+    src/gemm1/gemm_cpu.cu
+    src/gemm1/gemm_naive.cu
+    src/gemm1/gemm_coalescing.cu
 )
 
 target_include_directories(${CULIB} PUBLIC ${CMAKE_SOURCE_DIR}/include)

@@ -1,4 +1,5 @@
-#include "gemm/gemm.cuh"
+// #include "gemm/gemm.cuh"
+#include "gemm1/gemm_cpu.cuh"
 #include <iostream>
 #include <vector>
 
@@ -15,7 +16,9 @@ int main(int argc, char const *argv[])
     
 
 
-    lunch_sgemm_cpu(a.data(), b.data(), c.data(), M, K, N);
+    // lunch_sgemm_cpu(a.data(), b.data(), c.data(), M, K, N);
+    lunch_sgemm_cpu(M, N, K, 1, a.data(), b.data(), 0, c.data());
+    
 
     for (int i = 0; i < M; ++i) {
         for (int j = 0; j < N; ++j) {

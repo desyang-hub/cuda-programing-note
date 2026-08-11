@@ -3,6 +3,7 @@
 #include "gemm/sgemm_gpu_v2.cuh"
 #include "gemm/sgemm_gpu_v3.cuh"
 #include "gemm/sgemm_gpu_ai.cuh"
+#include "gemm1/gemm_naive.cuh"
 #include "cuda_utils.h"
 #include <iostream>
 
@@ -41,8 +42,9 @@ int main(int argc, char const *argv[])
 
     CudaEvent start, end;
     cudaEventRecord(start.get());
+    lunch_sgemm_naive(M, N, K, 1, d_a.get(), d_b.get(), 0, d_c.get());
     // lunch_sgemm_gpu(d_a.get(), d_b.get(), d_c.get(), M, K, N);
-    lunch_sgemm_gpu_v1(d_a.get(), d_b.get(), d_c.get(), M, K, N);
+    // lunch_sgemm_gpu_v1(d_a.get(), d_b.get(), d_c.get(), M, K, N);
     // lunch_sgemm_gpu_v2(d_a.get(), d_b.get(), d_c.get(), M, K, N);
     // lunch_sgemm_gpu_v3(d_a.get(), d_b.get(), d_c.get(), M, K, N);
     // launch_sgemm_optimized(d_a.get(), d_b.get(), d_c.get(), M, K, N);
