@@ -39,6 +39,9 @@ add_library(${CULIB}
     src/gemm1/gemm_cpu.cu
     src/gemm1/gemm_naive.cu
     src/gemm1/gemm_coalescing.cu
+    src/sgemm/sgemm_coalescing.cu
+    src/sgemm/sgemm_naive.cu
+    src/sgemm/sgemm_03.cu
 )
 
 target_include_directories(${CULIB} PUBLIC ${CMAKE_SOURCE_DIR}/include)
@@ -77,3 +80,4 @@ target_compile_options(cuda_demo PRIVATE
 
 
 add_subdirectory(examples)
+add_subdirectory(benchmark)
