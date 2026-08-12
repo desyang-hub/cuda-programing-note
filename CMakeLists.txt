@@ -42,6 +42,7 @@ add_library(${CULIB}
     src/sgemm/sgemm_coalescing.cu
     src/sgemm/sgemm_naive.cu
     src/sgemm/sgemm_03.cu
+    src/sgemm/sgemm_04.cu
 )
 
 target_include_directories(${CULIB} PUBLIC ${CMAKE_SOURCE_DIR}/include)

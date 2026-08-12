@@ -274,6 +274,8 @@ int main() {
         {"sgemm_naive",  lunch_gemm_naive},
         {"sgemm_coalescing", lunch_gemm_coalescing},
         {"sgemm_03", lunch_gemm_03},
+        {"sgemm_04", lunch_gemm_04},
+        // {"sgemm_05", lunch_gemm_05},
         // {"sgemm_tiled",  lunch_sgemm_tiled},
         // {"sgemm_warp",   lunch_sgemm_warp},
         // {"sgemm_ldg",    lunch_sgemm_ldg},
