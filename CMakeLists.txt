@@ -44,6 +44,8 @@ add_library(${CULIB}
     src/sgemm/sgemm_sharedMemTiling.cu
     src/sgemm/sgemm_sharedMemTN.cu
     src/sgemm/sgemm_sharedMemTMTN.cu
+    src/sgemm/sgemm_2DBlocktiling.cu
+    src/sgemm/sgemm_1DBlocktiling.cu
     src/sgemm/sgemm_03.cu
     src/sgemm/sgemm_04.cu
     src/sgemm/sgemm_05.cu

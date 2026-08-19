@@ -277,7 +277,7 @@ void lunch_sgemm_sharedMemTMTN(int M, int N, int K, float alpha, const float *A,
             const int BN = 128;
             dim3 block(CEIL_DIV(BN, TN), CEIL_DIV(BM, TM));
             dim3 grid(CEIL_DIV(N, BN), CEIL_DIV(M, BM));
-            sgemm_sharedMemTMTN_v1<BM, BN, BK, TM, TN>
+            sgemm_sharedMemTMTN<BM, BN, BK, TM, TN>
             <<<grid, block, 0, stream>>>(M, N, K, alpha, A, B, beta, C);
         }
         else {
