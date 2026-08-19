@@ -40,11 +40,11 @@ struct MatSize { int M, N, K; };
 
 // ── 在此添加待测矩阵尺寸 ──
 static const std::vector<MatSize> BENCH_SIZES = {
-    {  256,   256,   256},
+    // {  256,   256,   256},
     {  512,   512,   512},
     { 1024,  1024,  1024},
     { 2048,  2048,  2048},
-    // { 4096,  4096,  4096},
+    { 4096,  4096,  4096},
     // { 8192,  8192,  8192},
 };
 
@@ -122,6 +122,27 @@ static bool verify_with_cublas(cublasHandle_t handle,
 
     CUDA_CHECK(cudaFree(dC_ref));
     return pass;
+}
+
+
+// ============================================================
+//  cuBLAS Wrapper（适配 Row-Major SGEMM 接口）
+// ============================================================
+static cublasHandle_t g_cublas_handle = nullptr;
+
+void cublas_sgemm_rowmajor(int M, int N, int K, float alpha,
+                           const float *A, const float *B,
+                           float beta, float *C, cudaStream_t stream)
+{
+    // Row-major C = αAB + βC  ⟺  Col-major Cᵀ = αBᵀAᵀ + βCᵀ
+    // cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc)
+    // 这里把 row-major 的 (M,N,K) 映射为 col-major 的 (N,M,K)
+    CUBLAS_CHECK(cublasSetStream(g_cublas_handle, stream));
+    CUBLAS_CHECK(cublasSgemm(g_cublas_handle,
+                             CUBLAS_OP_N, CUBLAS_OP_N,
+                             N, M, K,
+                             &alpha, B, N, A, K,
+                             &beta, C, N));
 }
 
 // ============================================================
@@ -269,12 +290,19 @@ int main() {
     printf("Warmup: %d | Iters: %d | Tol: REL=%.0e ABS=%.0e\n",
            WARMUP_ITERS, BENCH_ITERS, REL_TOL, ABS_TOL);
 
+    // ★ 创建全局 cuBLAS handle ★
+    CUBLAS_CHECK(cublasCreate(&g_cublas_handle));
+
     // ★ 注册所有待测 kernel —— 增删只改这里 ★
     std::vector<KernelEntry> kernels = {
-        {"sgemm_naive",  lunch_gemm_naive},
-        {"sgemm_coalescing", lunch_gemm_coalescing},
-        {"sgemm_03", lunch_gemm_03},
-        {"sgemm_04", lunch_gemm_04},
+        {"sgemm_cublas", cublas_sgemm_rowmajor},
+        // {"sgemm_naive", lunch_gemm_naive},
+        // {"sgemm_coalescing", lunch_gemm_coalescing},
+        // {"sgemm_sharedMemTiling", lunch_sgemm_sharedMemTiling},
+        // {"sgemm_sharedMemTN", lunch_sgemm_sharedMemTN},
+        {"sgemm_sharedMemTMTN", lunch_sgemm_sharedMemTMTN},
+        // {"sgemm_03", lunch_gemm_03},
+        // {"sgemm_04", lunch_gemm_04},
         // {"sgemm_05", lunch_gemm_05},
         // {"sgemm_tiled",  lunch_sgemm_tiled},
         // {"sgemm_warp",   lunch_sgemm_warp},
@@ -283,5 +311,8 @@ int main() {
     };
 
     run_all_benchmarks(kernels, BENCH_SIZES);
+
+    // ★ 销毁 handle ★
+    CUBLAS_CHECK(cublasDestroy(g_cublas_handle));
     return 0;
 }

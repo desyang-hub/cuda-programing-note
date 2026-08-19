@@ -17,3 +17,6 @@ target_link_libraries(strict_test PRIVATE ${CULIB})
 
 add_executable(gemm1_test gemm1_test.cc)
 target_link_libraries(gemm1_test PRIVATE ${CULIB})
+
+add_executable(ncu_test ncu_test.cpp)
+target_link_libraries(ncu_test PRIVATE ${CULIB})

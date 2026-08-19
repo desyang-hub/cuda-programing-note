@@ -5,3 +5,5 @@ code/
 sections/
 target/
 *.ncu-rep
+*.bin
+nv-system-info-collector

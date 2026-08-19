@@ -1,0 +1,1 @@
+/usr/local/cuda-12.8/bin/compute-sanitizer --tool memcheck ./bin/bench
